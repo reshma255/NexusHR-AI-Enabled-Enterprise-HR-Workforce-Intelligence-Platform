@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: nexushr-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: nexushr
+      POSTGRES_USER: nexushr_user
+      POSTGRES_PASSWORD: nexushr_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexushr_user -d nexushr"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: nexushr-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./nexushr-backend
+      dockerfile: Dockerfile
+    container_name: nexushr-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_NAME=nexushr
+      - DB_USERNAME=nexushr_user
+      - DB_PASSWORD=nexushr_password
+      - REDIS_HOST=redis
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-ZGVmYXVsdC1uZXh1cy1oci1zdXBlci1zZWNyZXQtand0LWtleS0yNTYtYml0}
+      - HF_API_KEY=${HF_API_KEY}
+      - HF_MODEL=${HF_MODEL}
+      - APP_NOTIFICATION_EMAIL_ENABLED=true
+      - APP_NOTIFICATION_SMS_ENABLED=true
+      - APP_NOTIFICATION_EMAIL_PROVIDER=AWS_SES
+      - APP_NOTIFICATION_SMS_PROVIDER=Twilio
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  adminer:
+    image: adminer:latest
+    container_name: nexushr-adminer
+    ports:
+      - "8181:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: pepa-linha-dark
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./nexushr-frontend
+      dockerfile: Dockerfile
+    container_name: nexushr-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:
