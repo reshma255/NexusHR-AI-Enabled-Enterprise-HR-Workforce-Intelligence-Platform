@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # NexusHR — AI-Enabled HR & Workforce Intelligence Platform
 
 > A production-grade, full-stack Human Resource Management System built with **Spring Boot 3**, **React 18 + TypeScript**, **PostgreSQL 17**, **Redis**, **Docker**, and **Kubernetes**.
@@ -215,3 +216,6 @@ NexusHR/
 ## Built for
 
 Zidio Development — Java Full-Stack Internship Program (2026)
+=======
+# NexusHR-AI-Enabled-Enterprise-HR-Workforce-Intelligence-Platform
+>>>>>>> 849b66a0b8b09dbd7546b0fea1c3906cb0b0e54f
